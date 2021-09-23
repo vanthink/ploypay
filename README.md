@@ -11,6 +11,7 @@
 ### 公共配置
 
 ```
+
 [
     'use_sandbox' => true,
     'appid'=>'8ab74856-8772-45c9-96db-54cb30ab9f74',//APP ID
@@ -21,4 +22,5 @@
     'user_id'=>'N003401513',// 收银员 ID
     'notify_url'=>'http://www.laoqianjunzi.con/notify',
 ]
+
 ```
