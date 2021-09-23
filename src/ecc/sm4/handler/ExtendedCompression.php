@@ -1,0 +1,176 @@
+<?php
+namespace polypay\ecc\sm34\handler;
+// +----------------------------------------------------------------------
+// | Title: 扩展压缩算法
+// +----------------------------------------------------------------------
+// | Author: 劳谦君子 <laoqianjunzi@qq.com>
+// +----------------------------------------------------------------------
+// | Date: 2021年09月22日
+// +----------------------------------------------------------------------
+// | Description：
+// +----------------------------------------------------------------------
+
+use polypay\ecc\sm34\types\Word;
+use polypay\ecc\sm34\libs\WordConversion;
+use polypay\ecc\sm34\handler\Substitution;
+use polypay\ecc\sm34\handler\SmallJHandler;
+use polypay\ecc\sm34\handler\BigJHandler;
+
+class ExtendedCompression
+{
+    /** @var array $W */
+    private $W;
+    /** @var array $W ' */
+    private $W_s;
+    
+   
+    public function CF($Vi, $Bi)
+    {
+        // 消息扩展
+        $this->extended($Bi);
+        
+        /** @var array $registers 八个寄存器的名字 */
+        $registers = array(
+            'A',
+            'B',
+            'C',
+            'D',
+            'E',
+            'F',
+            'G',
+            'H'
+        );
+        
+        foreach ($registers as $i => $register) {
+            $$register = new Word(substr($Vi, $i * 32, 32));
+        }
+        
+        
+        $small_j_handler = new SmallJHandler();
+        $big_j_handler = new BigJHandler();
+        
+        for ($j = 0; $j < 64; $j++) {
+            $j_handler = ($j >= SmallJHandler::SMALLEST_J && $j < BigJHandler::SMALLEST_J)
+                ? $small_j_handler
+                : $big_j_handler;
+            
+            $SS1 = WordConversion::shiftLeftConversion(
+                WordConversion::addConversion(
+                    array(
+                        WordConversion::shiftLeftConversion($A, 12),
+                        $E,
+                        WordConversion::shiftLeftConversion($j_handler->getT(), $j)
+                    )
+                ),
+                7
+            );
+            
+            $SS2 = WordConversion::xorConversion(
+                array(
+                    $SS1,
+                    WordConversion::shiftLeftConversion($A, 12)
+                )
+            );
+            
+            $TT1 = WordConversion::addConversion(
+                array(
+                    $j_handler->FF($A, $B, $C),
+                    $D,
+                    $SS2,
+                    $this->W_s[$j]
+                )
+            );
+            
+            $TT2 = WordConversion::addConversion(
+                array(
+                    $j_handler->GG($E, $F, $G),
+                    $H,
+                    $SS1,
+                    $this->W[$j]
+                )
+            );
+            
+            $D = $C;
+            
+            $C = WordConversion::shiftLeftConversion($B, 9);
+            
+            $B = $A;
+            
+            $A = $TT1;
+            
+            $H = $G;
+            
+            $G = WordConversion::shiftLeftConversion($F, 19);
+            
+            $F = $E;
+            
+            $TT2_object = new Substitution($TT2);
+            $E = $TT2_object->P0();
+        }
+        
+        return WordConversion::xorConversion(
+            array(
+                join(
+                    '',
+                    array(
+                        (new Word($A)),
+                        (new Word($B)),
+                        (new Word($C)),
+                        (new Word($D)),
+                        (new Word($E)),
+                        (new Word($F)),
+                        (new Word($G)),
+                        (new Word($H))
+                    )
+                ),
+                $Vi
+            )
+        );
+    }
+    
+    public function extended($Bi)
+    {
+        // 将消息分组B(i)划分为16个字W0, W1, · · · , W15。
+        $this->W = $this->W_s = array();
+        
+        $word_per_times = (int)ceil(strlen($Bi) / 16);
+        for ($i = 0; $i < 16; $i++) {
+            $this->W[$i] = new Word(
+                substr($Bi, $i * $word_per_times, $word_per_times)
+            );
+        }
+        
+        // 计算W
+        for ($j = 16; $j <= 67; $j++) {
+            $param_1 = (new Substitution(
+                WordConversion::xorConversion(
+                    array(
+                        $this->W[$j - 16],
+                        $this->W[$j - 9],
+                        WordConversion::shiftLeftConversion($this->W[$j - 3], 15)
+                    )
+                )
+            ));
+            
+            $this->W[$j] = WordConversion::xorConversion(
+                array(
+                    $param_1->P1(),
+                    WordConversion::shiftLeftConversion($this->W[$j - 13], 7),
+                    $this->W[$j - 6]
+                )
+            );
+        }
+        
+        unset($j);
+        
+        // 计算W'
+        for ($j = 0; $j <= 63; $j++) {
+            $this->W_s[$j] = WordConversion::xorConversion(
+                array(
+                    $this->W[$j],
+                    $this->W[$j + 4]
+                )
+            );
+        }
+    }
+}
