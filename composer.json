@@ -10,21 +10,17 @@
     "license": "Apache-2.0",
     "autoload": {
         "psr-4": {
-            "polypay\\": "src"
+            "polypay": "src"
         },
         "files": [
             "src/common.php"
         ]
     },
-    "autoload-dev": {
-        "psr-4": {
-            "polypay\\test\\M2\\": "tests"
-        }
-    },
+    
     "minimum-stability": "dev",
     "require": {
         "php": "^7.0",
-        "ext-gmp": "*",
+        "ext-gmp": "*"
     },
     "extra": {
         "think": {
