@@ -24,3 +24,51 @@
 ]
 
 ```
+### 两个例子
+
+```
+namespace app\order;
+
+use polypay\payment\Client;
+//
+class orderPay{
+
+    //微信统一下单
+    public function pay1(){
+        // 业务字段
+        $bizContent = [
+            "subAppId"=>"wxcb09c54c91986108",//子公众帐号ID（必传）
+            'orderId'    => date('YmdHis').random_int(1000, 9999),
+            "tradeType"=> "JSAPI",//交易类型 APP/MWEB/JSAPI（必传）
+            "tradeScene"=> "OFFLINE",//交易场景
+            "body"=> "xxx-生活服务",
+            'payValidTime'=>'1000',
+            'currencyCode' => '156',//交易币种，默认156，目前只支持人民币（156）
+            "spbillCreateIp"=>"192.168.1.10",
+            'txnAmt' => '1',//交易金额，单位为分（必传）
+            'mchReserved' => '1',
+            'subOpenId'=>'osd7d5Z9S_t5OCaoQoGbhEaxKjmY',
+        ];
+        $client=new Client();
+        $ret=  $client->onlinePay($bizContent);
+    }
+
+    //收款码申请
+    public function pay2(){
+        // 业务字段
+        $bizContent = [
+            'orderId'    => date('YmdHis').random_int(1000, 9999),
+            'payValidTime'=>'1000',
+            'notifyUrl' => 'https://baidu.com',
+            'txnAmt' => '1',//交易金额，单位为分（必传）
+            "body"=> "XXXX-生活服务",
+            "tradeScene"=> "OFFLINE",//交易场景
+        ];
+        $client=new Client();
+        $ret=  $client->qrcodeapply($bizContent);
+    }
+
+}
+
+```
+
