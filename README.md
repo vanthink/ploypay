@@ -6,7 +6,7 @@
 
 ## 配置
 
-> 配置文件位于 `config/pilypay.php`
+> 配置文件位于 `config/polypay.php`
 
 ### 公共配置
 
