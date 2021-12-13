@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace polypay\ecc\serializer\signature\der;
+namespace polypay\ecc\serializer\signature\Der;
 // +----------------------------------------------------------------------
 // | Title: 
 // +----------------------------------------------------------------------
