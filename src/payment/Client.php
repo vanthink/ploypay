@@ -10,7 +10,7 @@ namespace polypay\payment;
 // | Description：
 // +----------------------------------------------------------------------
 
-use think\facade\Config;
+use Illuminate\Support\Facades\Config;
 use polypay\encrypt\Sm2;
 
 class Client
@@ -118,7 +118,7 @@ class Client
         $bizContent = [
             'merId' => $this->config['mer_id'],
             'userId' => $this->config['user_id'],
-            'notifyUrl' => app()->request->domain() .$this->config['notify_url'],
+            'notifyUrl' => $this->config['notify_url'],
         ];
         $params = array_filter(array_merge($bizContent, $params), 'strlen'); 
         ksort($params);
